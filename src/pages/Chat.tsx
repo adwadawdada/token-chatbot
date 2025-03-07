@@ -87,13 +87,20 @@ const Chat = () => {
 
       console.log(`Sending message to thread ${currentThreadId}: ${content}`);
 
-      // Send message
+      // Send message and handle the streaming response
       await api.sendMessage(
         currentThreadId,
         content,
         token,
         (chunk) => {
-          setAssistantResponse((prev) => prev + chunk);
+          // Process each chunk of the SSE stream
+          // The expected format is "data: <content>"
+          // Just in case the format is different, we'll handle it accordingly
+          setAssistantResponse((prev) => {
+            // If chunk starts with "data: ", remove it
+            const cleanChunk = chunk.startsWith("data: ") ? chunk.substring(6) : chunk;
+            return prev + cleanChunk;
+          });
         }
       );
     } catch (error) {
