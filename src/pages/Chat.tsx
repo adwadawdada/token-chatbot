@@ -90,13 +90,11 @@ const Chat = () => {
       toast.error("Failed to send message");
     } finally {
       setIsLoading(false);
-      // Don't turn off typing until we've added the message to the chat history
     }
   };
 
   // Effect to add assistant message to chat history when typing is complete
   useEffect(() => {
-    // If we've received a response and we're no longer loading
     if (assistantResponse && !isLoading) {
       // Short timeout to ensure the typing animation completes naturally
       const timer = setTimeout(() => {
@@ -144,9 +142,9 @@ const Chat = () => {
       </header>
 
       {/* Chat container */}
-      <div className="chat-container">
+      <div className="chat-container flex-1 overflow-auto py-6 px-4 flex flex-col max-w-4xl mx-auto w-full">
         {/* Messages */}
-        <div className="message-container">
+        <div className="message-container flex-1">
           {messages.length === 0 ? (
             <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
           ) : (
