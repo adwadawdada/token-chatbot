@@ -25,6 +25,13 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!token) {
+      toast.error("You need to log in first");
+      logout();
+    }
+  }, [token, logout]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -36,8 +43,10 @@ const Chat = () => {
   const createThreadIfNeeded = async () => {
     if (!threadId && token) {
       try {
+        console.log("Creating new thread...");
         const newThreadId = await api.createThread(token);
         if (newThreadId) {
+          console.log("Thread created:", newThreadId);
           setThreadId(newThreadId);
           return newThreadId;
         }
@@ -76,6 +85,8 @@ const Chat = () => {
         return;
       }
 
+      console.log(`Sending message to thread ${currentThreadId}: ${content}`);
+
       // Send message
       await api.sendMessage(
         currentThreadId,
@@ -89,17 +100,20 @@ const Chat = () => {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
     } finally {
-      setIsLoading(false);
-      setIsTyping(false);
-      
-      // Add assistant message to chat history after typing is complete
-      if (assistantResponse) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantResponse }
-        ]);
-        setAssistantResponse("");
-      }
+      // Wait a moment before finalizing to ensure all chunks are received
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsTyping(false);
+        
+        // Add assistant message to chat history after typing is complete
+        if (assistantResponse) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: assistantResponse }
+          ]);
+          setAssistantResponse("");
+        }
+      }, 500);
     }
   };
 
